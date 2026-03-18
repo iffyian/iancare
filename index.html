@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>이안간병협회 관리 시스템</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; padding: 20px; background: #f4f7f9; color: #333; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; margin-bottom: 25px; }
+        .card { border: 1px solid #eef2f6; padding: 20px; border-radius: 10px; margin-bottom: 20px; background: #fff; }
+        .section-title { font-weight: bold; font-size: 1.1em; color: #007bff; margin-bottom: 15px; display: block; border-left: 4px solid #007bff; padding-left: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        label { display: block; font-size: 0.85em; color: #666; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .file-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px dashed #ccc; }
+        button { padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 16px; transition: 0.3s; }
+        .btn-reg { background: #2c3e50; color: white; }
+        .btn-print { background: #28a745; color: white; }
+
+        /* 인쇄 설정 (간병인 사용 확인서 양식) */
+        #print-use { display: none; width: 210mm; min-height: 297mm; padding: 25mm; margin: auto; background: white; color: #000; position: relative; box-sizing: border-box; }
+        .doc-title { text-align: center; font-size: 30px; font-weight: bold; text-decoration: underline; margin-bottom: 50px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid black; padding: 12px; text-align: center; font-size: 15px; }
+        th { background: #f2f2f2; width: 20%; }
+        .doc-footer { position: absolute; bottom: 50mm; width: 80%; left: 10%; text-align: center; }
+        .stamp-wrap { position: relative; display: inline-block; font-size: 28px; font-weight: bold; letter-spacing: 5px; }
+        .stamp-img { position: absolute; width: 40mm; right: -15mm; top: -12mm; opacity: 0.8; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .no-print { display: none; }
+            #print-use { display: block !important; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container no-print">
+    <h1>이안간병협회 관리 시스템</h1>
+
+    <div id="step1" class="card">
+        <span class="section-title">1. 정보 등록 및 파일 업로드</span>
+        <div class="grid">
+            <div><label>간병인 성명</label><input type="text" id="c_name"></div>
+            <div><label>간병인 생년(6자리)</label><input type="text" id="c_birth" placeholder="YYMMDD" maxlength="6"></div>
+            <div><label>간병인 연락처</label><input type="text" id="c_phone"></div>
+            <div><label>환자 성명</label><input type="text" id="p_name"></div>
+            <div><label>환자 생년(6자리)</label><input type="text" id="p_birth" placeholder="YYMMDD" maxlength="6"></div>
+            <div><label>환자 연락처</label><input type="text" id="p_phone"></div>
+        </div>
+        <label>사용 병원명</label>
+        <input type="text" id="hospital" style="margin-bottom:20px;">
+
+        <span class="section-title">필수 서류 업로드 (4개)</span>
+        <div class="file-list">
+            <div><label>입퇴원확인서</label><input type="file" id="f1"></div>
+            <div><label>간호기록지</label><input type="file" id="f2"></div>
+            <div><label>간병비이체내역</label><input type="file" id="f3"></div>
+            <div><label>간병일지</label><input type="file" id="f4"></div>
+        </div>
+        <button class="btn-reg" id="submitBtn" onclick="submitData()">조회 및 서버 등록</button>
+    </div>
+
+    <div id="step2" class="card" style="display:none; border: 2px solid #28a745;">
+        <span class="section-title">2. 간병비 사용 정보 입력</span>
+        <p>조회된 회원번호: <strong id="resMemberNo" style="color:red;"></strong></p>
+        <div class="grid">
+            <div><label>간병 시작일</label><input type="date" id="startDate" onchange="limitDate()"></div>
+            <div><label>간병 종료일</label><input type="date" id="endDate" onchange="limitDate()"></div>
+            <div><label>총 결제 금액</label><input type="text" id="amount" placeholder="예: 160,000" oninput="formatCur(this)"></div>
+        </div>
+        <button class="btn-print" onclick="preparePrint()">간병인 사용 확인서 출력</button>
+    </div>
+</div>
+
+<div id="print-use">
+    <div class="doc-title">간병인 사용 확인서</div>
+    <table>
+        <tr><th>업체명</th><td>이안간병협회</td><th>사업자번호</th><td>367-93-02131</td></tr>
+        <tr><th>대표자</th><td>허주희</td><th>등록번호</th><td>2025103103</td></tr>
+    </table>
+    <table style="margin-top:20px;">
+        <tr><th>간병인 성명</th><td id="u_c_name"></td><th>생년월일</th><td id="u_c_birth"></td></tr>
+        <tr><th>회원번호</th><td id="u_no" style="font-weight:bold;"></td><th>연락처</th><td id="u_c_phone"></td></tr>
+        <tr><th>환자 성명</th><td id="u_p_name"></td><th>사용병원</th><td id="u_hospital"></td></tr>
+        <tr><th>사용기간</th><td id="u_duration" colspan="3"></td></tr>
+        <tr><th>결제금액</th><td id="u_amount" colspan="3" style="font-weight:bold;"></td></tr>
+    </table>
+    <div style="text-align:center; margin-top:80px; font-size:18px;">위와 같이 간병인을 사용하고 대금을 영수하였음을 확인함.</div>
+    <div style="text-align:center; margin-top:50px; font-weight:bold; font-size:18px;" id="u_date"></div>
+    <div class="doc-footer">
+        <div class="stamp-wrap">이 안 간 병 협 회 <img src="https://ibb.co/SXQJ7Zk3" class="stamp-img"></div>
+    </div>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxkdRqKbYn0vG3HhyOfdjdp-EjZBg3bOdvGCmb772HzKafGW_HoZ90Tpt1KxNJmUkBd1w/exec';
+
+    // 날짜 제한 설정
+    window.onload = function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').max = today;
+        document.getElementById('endDate').max = today;
+    };
+
+    function limitDate() {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        if (start) document.getElementById('endDate').min = start;
+        if (end) document.getElementById('startDate').max = end;
+    }
+
+    function isValidBirth(birth) {
+        if (!/^\d{6}$/.test(birth)) return false;
+        const mm = parseInt(birth.substring(2, 4), 10);
+        const dd = parseInt(birth.substring(4, 6), 10);
+        return (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31);
+    }
+
+    function formatCur(obj) {
+        let val = obj.value.replace(/[^0-9]/g, "");
+        obj.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    async function getFileData(id) {
+        const file = document.getElementById(id).files[0];
+        if (!file) return null;
+        return new Promise(res => {
+            const r = new FileReader();
+            r.onload = () => res({ name: file.name, data: r.result });
+            r.readAsDataURL(file);
+        });
+    }
+
+    async function submitData() {
+        const btn = document.getElementById('submitBtn');
+        const c_birth = document.getElementById('c_birth').value;
+        const p_birth = document.getElementById('p_birth').value;
+
+        if (!isValidBirth(c_birth) || !isValidBirth(p_birth)) return alert("생년월일 6자리가 올바르지 않습니다.");
+
+        btn.disabled = true; btn.innerText = "조회 중...";
+        
+        const payload = {
+            c_name: document.getElementById('c_name').value.trim(),
+            c_birth: c_birth,
+            c_phone: document.getElementById('c_phone').value.trim(),
+            p_name: document.getElementById('p_name').value.trim(),
+            p_birth: p_birth,
+            p_phone: document.getElementById('p_phone').value.trim(),
+            hospital: document.getElementById('hospital').value.trim(),
+            f1: await getFileData('f1'), f2: await getFileData('f2'),
+            f3: await getFileData('f3'), f4: await getFileData('f4')
+        };
+
+        fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(res => {
+            if(res.result === "success") {
+                document.getElementById('resMemberNo').innerText = res.memberNo;
+                document.getElementById('step2').style.display = 'block';
+                alert(res.isDuplicate ? "기존 정보를 불러왔습니다." : "신규 등록되었습니다.");
+            }
+            btn.disabled = false; btn.innerText = "조회 및 서버 등록";
+        });
+    }
+
+    function preparePrint() {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        const amt = document.getElementById('amount').value;
+
+        if(!start || !end || !amt) return alert("간병 기간과 금액을 입력하세요.");
+
+        document.getElementById('u_c_name').innerText = document.getElementById('c_name').value;
+        document.getElementById('u_c_birth').innerText = document.getElementById('c_birth').value;
+        document.getElementById('u_c_phone').innerText = document.getElementById('c_phone').value;
+        document.getElementById('u_no').innerText = document.getElementById('resMemberNo').innerText;
+        document.getElementById('u_p_name').innerText = document.getElementById('p_name').value;
+        document.getElementById('u_hospital').innerText = document.getElementById('hospital').value;
+        document.getElementById('u_duration').innerText = `${start} ~ ${end}`;
+        document.getElementById('u_amount').innerText = `금 ${amt}원`;
+        
+        const d = new Date();
+        document.getElementById('u_date').innerText = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+        
+        window.print();
+    }
+</script>
+</body>
+</html>
