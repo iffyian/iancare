@@ -544,7 +544,7 @@
             </div>
             <div class="input-row">
                 <label>간병인 연락처</label>
-                <input type="text" id="c_phone" placeholder="010-0000-0000" autocomplete="off">
+                <input type="text" id="c_phone" placeholder="010-0000-0000" autocomplete="off" oninput="formatPhone(this)">
             </div>
 
             <div class="section-label"><span class="dot"></span>환자 정보 <span class="optional-tag">선택</span></div>
@@ -558,7 +558,7 @@
             </div>
             <div class="input-row">
                 <label>환자 연락처</label>
-                <input type="text" id="p_phone" placeholder="010-0000-0000" autocomplete="off">
+                <input type="text" id="p_phone" placeholder="010-0000-0000" autocomplete="off" oninput="formatPhone(this)">
             </div>
             <div class="input-row">
                 <label>사용 병원명</label>
@@ -640,7 +640,7 @@
             </div>
             <div class="input-row">
                 <label>간병인 연락처</label>
-                <input type="text" id="f_cphone" placeholder="010-0000-0000">
+                <input type="text" id="f_cphone" placeholder="010-0000-0000" oninput="formatPhone(this)">
             </div>
             <div class="input-row">
                 <label>회원번호</label>
@@ -749,7 +749,7 @@
 </div>
 
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbwpt3is76W7aflzBazjnfCkxYRnaJQ3E9mxuBPRd9B2VHbNQDoirlHdVLc98aVRBPW0aQ/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbwYKL8hGaBHBcTG2ZBenr275_zlyMSQZFUFOMlTBCGKyZ-nGVqQExXCyKPbdxh_mjjz-w/exec';
 
 let registeredName = '';
 
@@ -766,6 +766,17 @@ function showSection(id) {
     el.style.display = 'block';
     el.classList.add('active');
     window.scrollTo(0, 0);
+}
+
+function formatPhone(obj) {
+    let val = obj.value.replace(/[^0-9]/g, "");
+    if (val.length <= 3) {
+        obj.value = val;
+    } else if (val.length <= 7) {
+        obj.value = val.substring(0,3) + "-" + val.substring(3);
+    } else {
+        obj.value = val.substring(0,3) + "-" + val.substring(3,7) + "-" + val.substring(7,11);
+    }
 }
 
 function formatCur(obj) {
