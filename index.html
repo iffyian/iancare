@@ -248,7 +248,8 @@
         }
         .input-row input[type="text"],
         .input-row input[type="date"],
-        .input-row input[type="file"] {
+        .input-row input[type="file"],
+        .input-row input[type="tel"] {
             width: 100%;
             padding: 14px 16px;
             border: 2px solid var(--border);
@@ -535,33 +536,33 @@
             <div class="section-label"><span class="dot"></span>간병인 정보 <span class="required-tag">필수</span></div>
             <div class="input-row">
                 <label>간병인 성명</label>
-                <input type="text" id="c_name" placeholder="홍길동">
+                <input type="text" id="c_name" placeholder="홍길동" autocomplete="off">
             </div>
             <div class="input-row">
                 <label>간병인 생년월일 <span style="font-weight:400; font-size:0.85em; color:#999;">(8자리, 예: 19800101)</span></label>
-                <input type="text" id="c_birth" placeholder="19800101" maxlength="8">
+                <input type="text" id="c_birth" placeholder="19800101" maxlength="8" autocomplete="off">
             </div>
             <div class="input-row">
                 <label>간병인 연락처</label>
-                <input type="text" id="c_phone" placeholder="010-0000-0000">
+                <input type="text" id="c_phone" placeholder="010-0000-0000" autocomplete="off">
             </div>
 
             <div class="section-label"><span class="dot"></span>환자 정보 <span class="optional-tag">선택</span></div>
             <div class="input-row">
                 <label>환자 성명</label>
-                <input type="text" id="p_name" placeholder="홍길순">
+                <input type="text" id="p_name" placeholder="홍길순" autocomplete="off">
             </div>
             <div class="input-row">
                 <label>환자 생년월일 <span style="font-weight:400; font-size:0.85em; color:#999;">(8자리)</span></label>
-                <input type="text" id="p_birth" placeholder="19500101" maxlength="8">
+                <input type="text" id="p_birth" placeholder="19500101" maxlength="8" autocomplete="off">
             </div>
             <div class="input-row">
                 <label>환자 연락처</label>
-                <input type="text" id="p_phone" placeholder="010-0000-0000">
+                <input type="text" id="p_phone" placeholder="010-0000-0000" autocomplete="off">
             </div>
             <div class="input-row">
                 <label>사용 병원명</label>
-                <input type="text" id="hospital" placeholder="○○병원">
+                <input type="text" id="hospital" placeholder="○○병원" autocomplete="off">
             </div>
         </div>
         <div class="card-footer">
@@ -748,7 +749,7 @@
 </div>
 
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbxkdRqKbYn0vG3HhyOfdjdp-EjZBg3bOdvGCmb772HzKafGW_HoZ90Tpt1KxNJmUkBd1w/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbxCfyLKOFJrJn0yNJKJYa9bpy2zSY_qZgpfS0PPTZRBHytWaMbHdOvyALvwOcC0N5PrYw/exec';
 
 let registeredName = '';
 
@@ -805,12 +806,23 @@ function closeModal() {
 }
 
 async function registerMember() {
-    const c_name = document.getElementById('c_name').value.trim();
-    const c_birth = document.getElementById('c_birth').value.trim();
-    if (!c_name || c_birth.length !== 8) {
-        alert("간병인 성명과 8자리 생년월일을 확인하세요.");
+    // 버튼 클릭 즉시 입력값 스냅샷 — 자동완성 등 외부 변경 차단
+    const nameInput = document.getElementById('c_name');
+    const birthInput = document.getElementById('c_birth');
+    const c_name = (nameInput.value || '').trim();
+    const c_birth = (birthInput.value || '').trim();
+
+    if (!c_name) {
+        alert("간병인 성명을 입력하세요.");
+        nameInput.focus();
         return;
     }
+    if (c_birth.length !== 8 || !/^\d{8}$/.test(c_birth)) {
+        alert("생년월일을 8자리 숫자로 입력하세요.\n예: 19800101");
+        birthInput.focus();
+        return;
+    }
+
     const btn = document.getElementById('regBtn');
     btn.disabled = true; btn.innerHTML = '<span class="btn-icon">⏳</span> 처리 중...';
 
@@ -827,7 +839,7 @@ async function registerMember() {
     try {
         const r = await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
         const res = await r.json();
-        registeredName = c_name;
+        // c_name은 이미 위에서 스냅샷으로 캡처됨 — 여기서 다시 읽지 않음
         document.getElementById('displayNo').innerText = res.memberNo;
         document.getElementById('welcomeMsg').innerText = c_name + ' 님, 등록을 축하드립니다!';
         document.getElementById('targetNo').value = res.memberNo;
