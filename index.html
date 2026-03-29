@@ -2,191 +2,931 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>이안간병협회 관리 시스템</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Pretendard', sans-serif; padding: 20px; background: #f4f7f9; color: #333; }
-        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; margin-bottom: 25px; }
-        .card { border: 1px solid #eef2f6; padding: 20px; border-radius: 10px; margin-bottom: 20px; background: #fff; }
-        .section-title { font-weight: bold; font-size: 1.1em; color: #007bff; margin-bottom: 15px; display: block; border-left: 4px solid #007bff; padding-left: 10px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        label { display: block; font-size: 0.85em; color: #666; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        .file-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px dashed #ccc; }
-        button { padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 16px; transition: 0.3s; }
-        .btn-reg { background: #2c3e50; color: white; }
-        .btn-print { background: #28a745; color: white; }
+        :root {
+            --primary: #1a4f8a;
+            --primary-light: #2d6dbf;
+            --accent: #e8a020;
+            --accent-light: #f5b942;
+            --soft: #eef4fc;
+            --border: #d0dff0;
+            --text: #1c2b3a;
+            --text-sub: #5a7090;
+            --success: #1a9e6e;
+            --danger: #c0392b;
+            --card-bg: #ffffff;
+            --bg: #f0f5fb;
+        }
 
-        /* 인쇄 설정 (간병인 사용 확인서 양식) */
-        #print-use { display: none; width: 210mm; min-height: 297mm; padding: 25mm; margin: auto; background: white; color: #000; position: relative; box-sizing: border-box; }
-        .doc-title { text-align: center; font-size: 30px; font-weight: bold; text-decoration: underline; margin-bottom: 50px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid black; padding: 12px; text-align: center; font-size: 15px; }
-        th { background: #f2f2f2; width: 20%; }
-        .doc-footer { position: absolute; bottom: 50mm; width: 80%; left: 10%; text-align: center; }
-        .stamp-wrap { position: relative; display: inline-block; font-size: 28px; font-weight: bold; letter-spacing: 5px; }
-        .stamp-img { position: absolute; width: 40mm; right: -15mm; top: -12mm; opacity: 0.8; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        /* ── 헤더 ── */
+        .site-header {
+            background: linear-gradient(135deg, #0d2f5e 0%, #1a4f8a 60%, #2563b0 100%);
+            padding: 22px 0 18px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .site-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .site-header h1 {
+            font-size: 1.9em;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 6px;
+            position: relative;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .site-header p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.82em;
+            letter-spacing: 2px;
+            margin-top: 5px;
+            position: relative;
+        }
+
+        /* ── 메인 컨테이너 ── */
+        .container {
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 30px 16px 60px;
+        }
+
+        /* ── 카드 ── */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(26,79,138,0.10);
+            overflow: hidden;
+            display: none;
+        }
+        .card.active { display: block; }
+
+        /* ── 인트로 ── */
+        #intro-page {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(26,79,138,0.10);
+            overflow: hidden;
+        }
+        .intro-hero {
+            background: linear-gradient(135deg, #1a4f8a, #2d6dbf);
+            padding: 38px 30px 30px;
+            text-align: center;
+            position: relative;
+        }
+        .intro-hero-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.72em;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+        }
+        .intro-hero h2 {
+            font-size: 2.1em;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.2;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .intro-hero p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9em;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .intro-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            padding: 0;
+        }
+        .feature-item {
+            padding: 22px 20px;
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        .feature-item:nth-child(2n) { border-right: none; }
+        .feature-item:nth-child(3), .feature-item:nth-child(4) { border-bottom: none; }
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+        .fi-blue { background: #dbeafe; }
+        .fi-gold { background: #fef3c7; }
+        .fi-green { background: #d1fae5; }
+        .fi-red { background: #fee2e2; }
+        .feature-item h4 { font-size: 0.92em; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .feature-item p { font-size: 0.78em; color: var(--text-sub); line-height: 1.5; }
+
+        .intro-actions {
+            padding: 24px 24px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ── 버튼 ── */
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 17px 24px;
+            border: none;
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 1.05em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary {
+            background: linear-gradient(135deg, #1a4f8a, #2d6dbf);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(26,79,138,0.3);
+        }
+        .btn-primary:hover { filter: brightness(1.08); box-shadow: 0 6px 20px rgba(26,79,138,0.4); }
+        .btn-secondary {
+            background: var(--soft);
+            color: var(--primary);
+            border: 2px solid var(--border);
+        }
+        .btn-secondary:hover { background: #dbeafe; }
+        .btn-success {
+            background: linear-gradient(135deg, #1a9e6e, #27ae85);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(26,158,110,0.3);
+        }
+        .btn-success:hover { filter: brightness(1.08); }
+        .btn-accent {
+            background: linear-gradient(135deg, #e8a020, #f5b942);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(232,160,32,0.3);
+        }
+        .btn-accent:hover { filter: brightness(1.08); }
+        .btn-icon { font-size: 1.2em; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* ── 카드 헤더 ── */
+        .card-header {
+            background: linear-gradient(135deg, #1a4f8a, #2d6dbf);
+            padding: 22px 28px;
+            color: #fff;
+        }
+        .card-header .step-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            font-size: 0.72em;
+            letter-spacing: 1px;
+            font-weight: 600;
+            padding: 3px 12px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+        }
+        .card-header h2 { font-size: 1.3em; font-weight: 800; }
+        .card-header p { font-size: 0.85em; opacity: 0.8; margin-top: 4px; }
+
+        /* ── 폼 ── */
+        .form-body { padding: 28px 28px 24px; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.0em;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 22px 0 14px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--soft);
+        }
+        .section-label:first-child { margin-top: 0; }
+        .section-label .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent);
+            display: inline-block;
+        }
+
+        .input-row { margin-bottom: 16px; }
+        .input-row label {
+            display: block;
+            font-size: 0.92em;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-bottom: 7px;
+            letter-spacing: 0.3px;
+        }
+        .input-row input[type="text"],
+        .input-row input[type="date"],
+        .input-row input[type="file"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1.05em;
+            color: var(--text);
+            background: var(--soft);
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .input-row input:focus {
+            border-color: var(--primary-light);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(45,109,191,0.12);
+        }
+        .input-row input[type="file"] {
+            padding: 11px 14px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        .optional-tag {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #64748b;
+            font-size: 0.7em;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+        .required-tag {
+            display: inline-block;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 0.7em;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        .card-footer {
+            padding: 0 28px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* ── step2 결과 ── */
+        .result-banner {
+            background: linear-gradient(135deg, #0d2f5e, #1a4f8a);
+            margin: 0;
+            padding: 28px;
+            text-align: center;
+        }
+        .result-banner .label { font-size: 0.85em; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
+        .result-banner .member-no {
+            font-size: 2.4em;
+            font-weight: 900;
+            color: var(--accent-light);
+            letter-spacing: 4px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .result-banner .welcome {
+            font-size: 1.0em;
+            color: rgba(255,255,255,0.9);
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        /* ── 계산기 ── */
+        .calc-section { padding: 24px 28px; }
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .calc-grid .input-row { margin-bottom: 0; }
+        .calc-grid .input-row:last-child { grid-column: span 2; }
+
+        .calc-result {
+            background: var(--soft);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-top: 16px;
+        }
+        .calc-result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 1.0em;
+            border-bottom: 1px solid var(--border);
+        }
+        .calc-result-row:last-child { border-bottom: none; }
+        .calc-result-row .val { font-weight: 700; color: var(--primary); font-size: 1.05em; }
+        .calc-result-row .val.danger { color: var(--danger); }
+
+        .account-box {
+            background: linear-gradient(135deg, #fef9ec, #fef3c7);
+            border: 2px solid #f5b942;
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-top: 14px;
+            text-align: center;
+        }
+        .account-box .acc-label { font-size: 0.8em; font-weight: 700; color: var(--accent); letter-spacing: 1px; margin-bottom: 6px; }
+        .account-box .acc-no { font-size: 1.2em; font-weight: 800; color: var(--text); letter-spacing: 1px; }
+        .account-box .acc-bank { font-size: 0.9em; color: var(--text-sub); margin-top: 4px; }
+
+        /* ── 서류 업로드 ── */
+        .file-num-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 0.78em;
+            font-weight: 700;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+        .file-label-wrap {
+            display: flex;
+            align-items: center;
+            font-size: 0.92em;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-bottom: 7px;
+        }
+
+        /* ── 팝업 모달 ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10,20,40,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 22px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.85) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #1a4f8a, #2d6dbf);
+            padding: 24px 28px 20px;
+            text-align: center;
+            color: #fff;
+        }
+        .modal-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .modal-header h3 { font-size: 1.15em; font-weight: 800; line-height: 1.4; }
+        .modal-body { padding: 24px 28px; }
+        .modal-body p { font-size: 0.95em; color: var(--text-sub); line-height: 1.8; margin-bottom: 12px; }
+        .modal-body .highlight {
+            background: var(--soft);
+            border-left: 4px solid var(--primary);
+            padding: 12px 16px;
+            border-radius: 0 10px 10px 0;
+            font-size: 0.9em;
+            color: var(--primary);
+            font-weight: 600;
+            line-height: 1.7;
+        }
+        .modal-footer { padding: 0 28px 24px; }
+
+        /* ── 인쇄 양식 ── */
+        #print-use {
+            display: none;
+            width: 210mm;
+            padding: 25mm;
+            margin: auto;
+            background: white;
+            color: #000;
+            position: relative;
+            box-sizing: border-box;
+        }
+        .doc-title { text-align: center; font-size: 28px; font-weight: bold; text-decoration: underline; margin-bottom: 40px; letter-spacing: 4px; }
+        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        .print-table th, .print-table td { border: 1px solid #333; padding: 11px 14px; text-align: center; font-size: 14px; }
+        .print-table th { background: #f2f2f2; width: 22%; font-weight: bold; }
+        .stamp-img { position: absolute; width: 40mm; right: 25mm; bottom: 40mm; opacity: 0.85; }
 
         @media print {
-            body { background: white; padding: 0; }
-            .no-print { display: none; }
+            .no-print { display: none !important; }
+            .site-header { display: none; }
             #print-use { display: block !important; border: none; }
+        }
+
+        /* ── 반응형 ── */
+        @media (max-width: 480px) {
+            .intro-features { grid-template-columns: 1fr 1fr; }
+            .calc-grid { grid-template-columns: 1fr; }
+            .calc-grid .input-row:last-child { grid-column: span 1; }
+            .form-body { padding: 22px 18px 16px; }
+            .card-footer { padding: 0 18px 22px; }
+            .calc-section { padding: 18px; }
         }
     </style>
 </head>
 <body>
 
+<!-- 헤더 -->
+<header class="site-header no-print">
+    <h1>이안간병협회</h1>
+    <p>IANCARE ASSOCIATION</p>
+</header>
+
+<!-- 메인 -->
 <div class="container no-print">
-    <h1>이안간병협회 관리 시스템</h1>
 
-    <div id="step1" class="card">
-        <span class="section-title">1. 정보 등록 및 파일 업로드</span>
-        <div class="grid">
-            <div><label>간병인 성명</label><input type="text" id="c_name"></div>
-            <div><label>간병인 생년(6자리)</label><input type="text" id="c_birth" placeholder="YYMMDD" maxlength="6"></div>
-            <div><label>간병인 연락처</label><input type="text" id="c_phone"></div>
-            <div><label>환자 성명</label><input type="text" id="p_name"></div>
-            <div><label>환자 생년(6자리)</label><input type="text" id="p_birth" placeholder="YYMMDD" maxlength="6"></div>
-            <div><label>환자 연락처</label><input type="text" id="p_phone"></div>
+    <!-- ① 인트로 -->
+    <div id="intro-page">
+        <div class="intro-hero">
+            <div class="intro-hero-badge">공식 간병 서류 전문 기관</div>
+            <h2>이안간병협회</h2>
+            <p>가족 간병, 이제 걱정 없이<br>전문적인 서류 처리를 도와드립니다.</p>
         </div>
-        <label>사용 병원명</label>
-        <input type="text" id="hospital" style="margin-bottom:20px;">
 
-        <span class="section-title">필수 서류 업로드 (4개)</span>
-        <div class="file-list">
-            <div><label>입퇴원확인서</label><input type="file" id="f1"></div>
-            <div><label>간호기록지</label><input type="file" id="f2"></div>
-            <div><label>간병비이체내역</label><input type="file" id="f3"></div>
-            <div><label>간병일지</label><input type="file" id="f4"></div>
+        <div class="intro-features">
+            <div class="feature-item">
+                <div class="feature-icon fi-blue">🏥</div>
+                <h4>가족 간병 전문</h4>
+                <p>모든 유형의 가족 간병 서류를 전문적으로 처리합니다</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon fi-gold">🗺️</div>
+                <h4>전국 어디서나</h4>
+                <p>지역 제한 없이 전국 어디서든 온라인으로 등록 가능</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon fi-green">📋</div>
+                <h4>맞춤형 서류</h4>
+                <p>국내 모든 보험사에 맞는 서류를 즉시 제공합니다</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon fi-red">💎</div>
+                <h4>업계 최저 수수료</h4>
+                <p>간병일 1일당 단 4,000원의 합리적인 수수료</p>
+            </div>
         </div>
-        <button class="btn-reg" id="submitBtn" onclick="submitData()">조회 및 서버 등록</button>
+
+        <div class="intro-actions">
+            <button class="btn btn-primary" onclick="showSection('step1')">
+                <span class="btn-icon">📝</span>
+                간병인 / 환자 등록 (회원번호 생성)
+            </button>
+            <button class="btn btn-secondary" onclick="showSection('step-file')">
+                <span class="btn-icon">📂</span>
+                서류 업로드 (기존 회원)
+            </button>
+        </div>
     </div>
 
-    <div id="step2" class="card" style="display:none; border: 2px solid #28a745;">
-        <span class="section-title">2. 간병비 사용 정보 입력</span>
-        <p>조회된 회원번호: <strong id="resMemberNo" style="color:red;"></strong></p>
-        <div class="grid">
-            <div><label>간병 시작일</label><input type="date" id="startDate" onchange="limitDate()"></div>
-            <div><label>간병 종료일</label><input type="date" id="endDate" onchange="limitDate()"></div>
-            <div><label>총 결제 금액</label><input type="text" id="amount" placeholder="예: 160,000" oninput="formatCur(this)"></div>
+    <!-- ② 등록 폼 -->
+    <div id="step1" class="card">
+        <div class="card-header">
+            <div class="step-badge">STEP 1</div>
+            <h2>간병인 / 환자 등록</h2>
+            <p>정보를 입력하시면 회원번호가 발급됩니다.</p>
         </div>
-        <button class="btn-print" onclick="preparePrint()">간병인 사용 확인서 출력</button>
+        <div class="form-body">
+
+            <div class="section-label"><span class="dot"></span>간병인 정보 <span class="required-tag">필수</span></div>
+            <div class="input-row">
+                <label>간병인 성명</label>
+                <input type="text" id="c_name" placeholder="홍길동">
+            </div>
+            <div class="input-row">
+                <label>간병인 생년월일 <span style="font-weight:400; font-size:0.85em; color:#999;">(8자리, 예: 19800101)</span></label>
+                <input type="text" id="c_birth" placeholder="19800101" maxlength="8">
+            </div>
+            <div class="input-row">
+                <label>간병인 연락처</label>
+                <input type="text" id="c_phone" placeholder="010-0000-0000">
+            </div>
+
+            <div class="section-label"><span class="dot"></span>환자 정보 <span class="optional-tag">선택</span></div>
+            <div class="input-row">
+                <label>환자 성명</label>
+                <input type="text" id="p_name" placeholder="홍길순">
+            </div>
+            <div class="input-row">
+                <label>환자 생년월일 <span style="font-weight:400; font-size:0.85em; color:#999;">(8자리)</span></label>
+                <input type="text" id="p_birth" placeholder="19500101" maxlength="8">
+            </div>
+            <div class="input-row">
+                <label>환자 연락처</label>
+                <input type="text" id="p_phone" placeholder="010-0000-0000">
+            </div>
+            <div class="input-row">
+                <label>사용 병원명</label>
+                <input type="text" id="hospital" placeholder="○○병원">
+            </div>
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-primary" id="regBtn" onclick="registerMember()">
+                <span class="btn-icon">✅</span> 회원번호 생성하기
+            </button>
+            <button class="btn btn-secondary" onclick="goHome()">
+                <span class="btn-icon">←</span> 처음으로
+            </button>
+        </div>
+    </div>
+
+    <!-- ③ 등록완료 + 계산 -->
+    <div id="step2" class="card">
+        <div class="result-banner">
+            <div class="label">등록된 회원번호</div>
+            <div class="member-no" id="displayNo">-</div>
+            <div class="welcome" id="welcomeMsg"></div>
+        </div>
+
+        <div class="calc-section">
+            <div class="section-label"><span class="dot"></span>간병 비용 계산</div>
+            <div class="calc-grid">
+                <div class="input-row">
+                    <label>간병 시작일</label>
+                    <input type="date" id="startDate" onchange="autoCalc()">
+                </div>
+                <div class="input-row">
+                    <label>간병 종료일</label>
+                    <input type="date" id="endDate" onchange="autoCalc()">
+                </div>
+                <div class="input-row">
+                    <label>1일 간병비 (원)</label>
+                    <input type="text" id="dayPrice" placeholder="예: 80,000" oninput="formatCur(this); autoCalc();">
+                </div>
+            </div>
+
+            <div class="calc-result">
+                <div class="calc-result-row"><span>간병 일수</span><span class="val" id="resDays">— 일</span></div>
+                <div class="calc-result-row"><span>총 간병비</span><span class="val" id="resTotalMoney">— 원</span></div>
+                <div class="calc-result-row"><span>간병 수수료 (1일 4,000원)</span><span class="val danger" id="resFee">— 원</span></div>
+            </div>
+
+            <div class="account-box">
+                <div class="acc-label">🏦 수수료 입금 계좌</div>
+                <div class="acc-no">103-12-220038</div>
+                <div class="acc-bank">농협은행 · 이안간병협회</div>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <button class="btn btn-success" onclick="preparePrint()">
+                <span class="btn-icon">🖨️</span> 확인서 출력하기
+            </button>
+            <button class="btn btn-accent" onclick="showSection('step-file')">
+                <span class="btn-icon">📂</span> 퇴원 후 서류 업로드하기
+            </button>
+            <button class="btn btn-secondary" onclick="goHome()">
+                <span class="btn-icon">←</span> 처음으로
+            </button>
+        </div>
+    </div>
+
+    <!-- ④ 서류 업로드 -->
+    <div id="step-file" class="card">
+        <div class="card-header">
+            <div class="step-badge">서류 업로드</div>
+            <h2>증빙 서류 등록</h2>
+            <p>퇴원 후 아래 3가지 서류를 업로드해 주세요.</p>
+        </div>
+        <div class="form-body">
+            <div class="input-row">
+                <label>간병인 성명</label>
+                <input type="text" id="f_cname" placeholder="간병인 이름">
+            </div>
+            <div class="input-row">
+                <label>간병인 연락처</label>
+                <input type="text" id="f_cphone" placeholder="010-0000-0000">
+            </div>
+            <div class="input-row">
+                <label>회원번호</label>
+                <input type="text" id="targetNo" placeholder="발급받은 회원번호 입력">
+            </div>
+
+            <div class="section-label" style="margin-top: 20px;"><span class="dot"></span>서류 첨부 (JPG)</div>
+
+            <div class="input-row">
+                <div class="file-label-wrap"><span class="file-num-badge">1</span>입퇴원확인서</div>
+                <input type="file" id="f1" accept="image/*">
+            </div>
+            <div class="input-row">
+                <div class="file-label-wrap"><span class="file-num-badge">2</span>간병비 이체내역</div>
+                <input type="file" id="f3" accept="image/*">
+            </div>
+            <div class="input-row">
+                <div class="file-label-wrap"><span class="file-num-badge">3</span>간병일지</div>
+                <input type="file" id="f4" accept="image/*">
+            </div>
+
+            <!-- 간병비 계산 -->
+            <div class="section-label" style="margin-top: 20px;"><span class="dot"></span>간병비 확인</div>
+            <div class="calc-grid">
+                <div class="input-row">
+                    <label>간병 시작일</label>
+                    <input type="date" id="fs_startDate" onchange="fileAutoCalc()">
+                </div>
+                <div class="input-row">
+                    <label>간병 종료일</label>
+                    <input type="date" id="fs_endDate" onchange="fileAutoCalc()">
+                </div>
+                <div class="input-row">
+                    <label>1일 간병비 (원)</label>
+                    <input type="text" id="fs_dayPrice" placeholder="예: 80,000" oninput="formatCur(this); fileAutoCalc();">
+                </div>
+            </div>
+
+            <div class="calc-result">
+                <div class="calc-result-row"><span>간병 일수</span><span class="val" id="fs_resDays">— 일</span></div>
+                <div class="calc-result-row"><span>총 간병비</span><span class="val" id="fs_resTotalMoney">— 원</span></div>
+                <div class="calc-result-row"><span>간병 수수료 (1일 4,000원)</span><span class="val danger" id="fs_resFee">— 원</span></div>
+            </div>
+
+            <div class="account-box">
+                <div class="acc-label">🏦 수수료 입금 계좌</div>
+                <div class="acc-no">103-12-220038</div>
+                <div class="acc-bank">농협은행 · 이안간병협회</div>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <button class="btn btn-primary" id="fileBtn" onclick="uploadFiles()">
+                <span class="btn-icon">✅</span> 등록 완료
+            </button>
+            <button class="btn btn-secondary" onclick="goHome()">
+                <span class="btn-icon">←</span> 처음으로
+            </button>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+<!-- ── 팝업 모달 ── -->
+<div class="modal-overlay no-print" id="regModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-icon">🎉</span>
+            <h3 id="modalTitle">등록이 완료되었습니다!</h3>
+        </div>
+        <div class="modal-body">
+            <div class="highlight" id="modalBody">
+            </div>
+            <p style="margin-top:14px; font-size:0.85em; color:#999;">
+                홈페이지: <a href="https://www.iancare.co.kr" target="_blank" style="color:var(--primary); font-weight:700;">www.iancare.co.kr</a>
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="closeModal()">
+                <span class="btn-icon">✔️</span> 확인했습니다
+            </button>
+        </div>
     </div>
 </div>
 
+<!-- ── 인쇄 양식 ── -->
 <div id="print-use">
     <div class="doc-title">간병인 사용 확인서</div>
-    <table>
+    <table class="print-table">
         <tr><th>업체명</th><td>이안간병협회</td><th>사업자번호</th><td>367-93-02131</td></tr>
         <tr><th>대표자</th><td>허주희</td><th>등록번호</th><td>2025103103</td></tr>
     </table>
-    <table style="margin-top:20px;">
+    <table class="print-table" style="margin-top:20px;">
         <tr><th>간병인 성명</th><td id="u_c_name"></td><th>생년월일</th><td id="u_c_birth"></td></tr>
         <tr><th>회원번호</th><td id="u_no" style="font-weight:bold;"></td><th>연락처</th><td id="u_c_phone"></td></tr>
         <tr><th>환자 성명</th><td id="u_p_name"></td><th>사용병원</th><td id="u_hospital"></td></tr>
         <tr><th>사용기간</th><td id="u_duration" colspan="3"></td></tr>
         <tr><th>결제금액</th><td id="u_amount" colspan="3" style="font-weight:bold;"></td></tr>
     </table>
-    <div style="text-align:center; margin-top:80px; font-size:18px;">위와 같이 간병인을 사용하고 대금을 영수하였음을 확인함.</div>
-    <div style="text-align:center; margin-top:50px; font-weight:bold; font-size:18px;" id="u_date"></div>
-    <div class="doc-footer">
-        <div class="stamp-wrap">이 안 간 병 협 회 <img src="https://ibb.co/SXQJ7Zk3" class="stamp-img"></div>
+    <div style="text-align:center; margin-top:80px; font-size:17px; line-height:1.8;">
+        위와 같이 간병인을 사용하고 대금을 영수하였음을 확인함.
     </div>
+    <div style="text-align:center; margin-top:50px; font-weight:bold; font-size:17px;" id="u_date"></div>
+    <div style="text-align:center; margin-top:100px; font-size:22px; font-weight:bold; letter-spacing:6px;">이 안 간 병 협 회</div>
+    <img src="https://ibb.co/SXQJ7Zk3" class="stamp-img" onerror="this.style.display='none'">
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxkdRqKbYn0vG3HhyOfdjdp-EjZBg3bOdvGCmb772HzKafGW_HoZ90Tpt1KxNJmUkBd1w/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbxkdRqKbYn0vG3HhyOfdjdp-EjZBg3bOdvGCmb772HzKafGW_HoZ90Tpt1KxNJmUkBd1w/exec';
 
-    // 날짜 제한 설정
-    window.onload = function() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('startDate').max = today;
-        document.getElementById('endDate').max = today;
+let registeredName = '';
+
+function goHome() {
+    document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+    document.getElementById('intro-page').style.display = 'block';
+    window.scrollTo(0, 0);
+}
+
+function showSection(id) {
+    document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+    document.getElementById('intro-page').style.display = 'none';
+    const el = document.getElementById(id);
+    el.style.display = 'block';
+    el.classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+function formatCur(obj) {
+    let val = obj.value.replace(/[^0-9]/g, "");
+    obj.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function calcDays(startId, endId, dayPriceId, daysId, totalId, feeId) {
+    const sDate = document.getElementById(startId).value;
+    const eDate = document.getElementById(endId).value;
+    const dPrice = parseInt(document.getElementById(dayPriceId).value.replace(/,/g, "")) || 0;
+    if (sDate && eDate) {
+        const diff = Math.ceil((new Date(eDate) - new Date(sDate)) / (1000*60*60*24)) + 1;
+        if (diff > 0) {
+            const totalCare = diff * dPrice;
+            const totalFee = diff * 4000;
+            document.getElementById(daysId).innerText = diff + " 일";
+            document.getElementById(totalId).innerText = totalCare.toLocaleString() + " 원";
+            document.getElementById(feeId).innerText = totalFee.toLocaleString() + " 원";
+        }
+    }
+}
+
+function autoCalc() {
+    calcDays('startDate','endDate','dayPrice','resDays','resTotalMoney','resFee');
+}
+function fileAutoCalc() {
+    calcDays('fs_startDate','fs_endDate','fs_dayPrice','fs_resDays','fs_resTotalMoney','fs_resFee');
+}
+
+function showModal(title, bodyHtml) {
+    document.getElementById('modalTitle').innerHTML = title;
+    document.getElementById('modalBody').innerHTML = bodyHtml;
+    document.getElementById('regModal').classList.add('active');
+}
+function closeModal() {
+    document.getElementById('regModal').classList.remove('active');
+}
+
+async function registerMember() {
+    const c_name = document.getElementById('c_name').value.trim();
+    const c_birth = document.getElementById('c_birth').value.trim();
+    if (!c_name || c_birth.length !== 8) {
+        alert("간병인 성명과 8자리 생년월일을 확인하세요.");
+        return;
+    }
+    const btn = document.getElementById('regBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="btn-icon">⏳</span> 처리 중...';
+
+    const payload = {
+        action: 'REGISTER',
+        c_name, c_birth,
+        c_phone: document.getElementById('c_phone').value,
+        p_name: document.getElementById('p_name').value || "-",
+        p_birth: document.getElementById('p_birth').value || "-",
+        p_phone: document.getElementById('p_phone').value || "-",
+        hospital: document.getElementById('hospital').value || "-"
     };
 
-    function limitDate() {
-        const start = document.getElementById('startDate').value;
-        const end = document.getElementById('endDate').value;
-        if (start) document.getElementById('endDate').min = start;
-        if (end) document.getElementById('startDate').max = end;
+    try {
+        const r = await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
+        const res = await r.json();
+        registeredName = c_name;
+        document.getElementById('displayNo').innerText = res.memberNo;
+        document.getElementById('welcomeMsg').innerText = c_name + ' 님, 등록을 축하드립니다!';
+        document.getElementById('targetNo').value = res.memberNo;
+        document.getElementById('f_cname').value = c_name;
+        document.getElementById('f_cphone').value = document.getElementById('c_phone').value;
+        showSection('step2');
+
+        showModal(
+            c_name + ' 님, 등록 완료!',
+            `회원번호: <strong style="color:var(--primary); font-size:1.1em;">${res.memberNo}</strong>으로 등록되었습니다.<br><br>
+            ✅ 간호사에게 <strong>간병인 상주 중</strong>이라고 꼭 말씀해 주세요.<br>
+            📋 퇴원 후 서류 등록을 잊지 마세요.<br>
+            🌐 www.iancare.co.kr`
+        );
+    } catch(e) {
+        alert("등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="btn-icon">✅</span> 회원번호 생성하기';
     }
+}
 
-    function isValidBirth(birth) {
-        if (!/^\d{6}$/.test(birth)) return false;
-        const mm = parseInt(birth.substring(2, 4), 10);
-        const dd = parseInt(birth.substring(4, 6), 10);
-        return (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31);
-    }
+async function uploadFiles() {
+    const memberNo = document.getElementById('targetNo').value.trim();
+    if (!memberNo) { alert("회원번호를 입력하세요."); return; }
 
-    function formatCur(obj) {
-        let val = obj.value.replace(/[^0-9]/g, "");
-        obj.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
+    const btn = document.getElementById('fileBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="btn-icon">⏳</span> 업로드 중...';
 
-    async function getFileData(id) {
-        const file = document.getElementById(id).files[0];
-        if (!file) return null;
-        return new Promise(res => {
-            const r = new FileReader();
-            r.onload = () => res({ name: file.name, data: r.result });
-            r.readAsDataURL(file);
-        });
-    }
+    const getFile = async (id) => {
+        const f = document.getElementById(id).files[0];
+        return f ? {
+            name: f.name,
+            data: await new Promise(res => {
+                const rd = new FileReader();
+                rd.onload = () => res(rd.result);
+                rd.readAsDataURL(f);
+            })
+        } : null;
+    };
 
-    async function submitData() {
-        const btn = document.getElementById('submitBtn');
-        const c_birth = document.getElementById('c_birth').value;
-        const p_birth = document.getElementById('p_birth').value;
-
-        if (!isValidBirth(c_birth) || !isValidBirth(p_birth)) return alert("생년월일 6자리가 올바르지 않습니다.");
-
-        btn.disabled = true; btn.innerText = "조회 중...";
-        
+    try {
         const payload = {
-            c_name: document.getElementById('c_name').value.trim(),
-            c_birth: c_birth,
-            c_phone: document.getElementById('c_phone').value.trim(),
-            p_name: document.getElementById('p_name').value.trim(),
-            p_birth: p_birth,
-            p_phone: document.getElementById('p_phone').value.trim(),
-            hospital: document.getElementById('hospital').value.trim(),
-            f1: await getFileData('f1'), f2: await getFileData('f2'),
-            f3: await getFileData('f3'), f4: await getFileData('f4')
+            action: 'UPLOAD',
+            memberNo,
+            cname: document.getElementById('f_cname').value,
+            cphone: document.getElementById('f_cphone').value,
+            f1: await getFile('f1'),
+            f3: await getFile('f3'),
+            f4: await getFile('f4')
         };
 
-        fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) })
-        .then(res => res.json())
-        .then(res => {
-            if(res.result === "success") {
-                document.getElementById('resMemberNo').innerText = res.memberNo;
-                document.getElementById('step2').style.display = 'block';
-                alert(res.isDuplicate ? "기존 정보를 불러왔습니다." : "신규 등록되었습니다.");
-            }
-            btn.disabled = false; btn.innerText = "조회 및 서버 등록";
-        });
+        const r = await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
+        const res = await r.json();
+
+        if (res.result === "success") {
+            showModal(
+                '서류 등록 완료!',
+                `회원번호 <strong>${memberNo}</strong>의 서류가 정상적으로 등록되었습니다.<br><br>
+                📌 처리 현황은 아래 홈페이지에서 확인하세요.<br>
+                🌐 www.iancare.co.kr`
+            );
+        } else {
+            alert("오류: " + res.message);
+        }
+    } catch(e) {
+        alert("업로드 중 오류가 발생했습니다.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="btn-icon">✅</span> 등록 완료';
     }
+}
 
-    function preparePrint() {
-        const start = document.getElementById('startDate').value;
-        const end = document.getElementById('endDate').value;
-        const amt = document.getElementById('amount').value;
+function preparePrint() {
+    const sDate = document.getElementById('startDate').value;
+    const eDate = document.getElementById('endDate').value;
+    const total = document.getElementById('resTotalMoney').innerText;
+    const days = document.getElementById('resDays').innerText;
+    const dayP = document.getElementById('dayPrice').value;
+    if (!sDate || !eDate || !dayP) { alert("날짜와 1일 간병비를 입력하세요."); return; }
 
-        if(!start || !end || !amt) return alert("간병 기간과 금액을 입력하세요.");
+    document.getElementById('u_c_name').innerText = document.getElementById('c_name').value;
+    document.getElementById('u_c_birth').innerText = document.getElementById('c_birth').value;
+    document.getElementById('u_c_phone').innerText = document.getElementById('c_phone').value;
+    document.getElementById('u_no').innerText = document.getElementById('displayNo').innerText;
+    document.getElementById('u_p_name').innerText = document.getElementById('p_name').value;
+    document.getElementById('u_hospital').innerText = document.getElementById('hospital').value;
+    document.getElementById('u_duration').innerText = `${sDate} ~ ${eDate} (${days})`;
+    document.getElementById('u_amount').innerText = `금 ${total} (1일 ${dayP}원)`;
 
-        document.getElementById('u_c_name').innerText = document.getElementById('c_name').value;
-        document.getElementById('u_c_birth').innerText = document.getElementById('c_birth').value;
-        document.getElementById('u_c_phone').innerText = document.getElementById('c_phone').value;
-        document.getElementById('u_no').innerText = document.getElementById('resMemberNo').innerText;
-        document.getElementById('u_p_name').innerText = document.getElementById('p_name').value;
-        document.getElementById('u_hospital').innerText = document.getElementById('hospital').value;
-        document.getElementById('u_duration').innerText = `${start} ~ ${end}`;
-        document.getElementById('u_amount').innerText = `금 ${amt}원`;
-        
-        const d = new Date();
-        document.getElementById('u_date').innerText = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
-        
-        window.print();
-    }
+    const d = new Date();
+    document.getElementById('u_date').innerText = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+    window.print();
+}
+
+// 초기 상태
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('intro-page').style.display = 'block';
+});
 </script>
 </body>
 </html>
